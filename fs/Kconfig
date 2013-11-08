@@ -187,6 +187,7 @@ if MISC_FILESYSTEMS
 source "fs/adfs/Kconfig"
 source "fs/affs/Kconfig"
 source "fs/ecryptfs/Kconfig"
+source "fs/sdcardfs/Kconfig"
 source "fs/hfs/Kconfig"
 source "fs/hfsplus/Kconfig"
 source "fs/befs/Kconfig"
@@ -273,11 +274,5 @@ endif
 
 source "fs/nls/Kconfig"
 source "fs/dlm/Kconfig"
-
-config DYNAMIC_FSYNC
-	bool "dynamic file sync control"
-	default n
-	help
-	  An experimental file sync control using Android's early suspend / late resume drivers
 
 endmenu

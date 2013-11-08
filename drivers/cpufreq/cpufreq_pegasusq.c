@@ -143,13 +143,13 @@ static unsigned int get_nr_run_avg(void)
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_SAMPLING_DOWN_FACTOR		(2)
+#define DEF_SAMPLING_DOWN_FACTOR		(1)
 #define MAX_SAMPLING_DOWN_FACTOR		(80000)
 #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(5)
 #define DEF_FREQUENCY_UP_THRESHOLD		(80)
 #define DEF_FREQUENCY_MIN_SAMPLE_RATE		(10000)
-#define MIN_FREQUENCY_UP_THRESHOLD		(60)
-#define MAX_FREQUENCY_UP_THRESHOLD		(90)
+#define MIN_FREQUENCY_UP_THRESHOLD		(11)
+#define MAX_FREQUENCY_UP_THRESHOLD		(100)
 #define DEF_SAMPLING_RATE			(50000)
 #define MIN_SAMPLING_RATE			(10000)
 #define MAX_HOTPLUG_RATE			(40u)
@@ -306,7 +306,7 @@ static void apply_hotplug_lock(void)
 	lock = atomic_read(&g_hotplug_lock);
 	flag = lock - online;
 
-	if (flag == 0)
+	if (lock == 0 || flag == 0)
 		return;
 
 	work = flag > 0 ? &dbs_info->up_work : &dbs_info->down_work;
@@ -483,6 +483,21 @@ static ssize_t show_hotplug_lock(struct kobject *kobj,
 {
 	return sprintf(buf, "%d\n", atomic_read(&g_hotplug_lock));
 }
+
+static ssize_t show_cpucore_table(struct kobject *kobj,
+				struct attribute *attr, char *buf)
+{
+	ssize_t count = 0;
+	int i;
+	
+	for (i = CONFIG_NR_CPUS; i > 0; i--) {
+		count += sprintf(&buf[count], "%d ", i);
+	}
+	count += sprintf(&buf[count], "\n");
+
+	return count;
+}
+
 
 #define show_hotplug_param(file_name, num_core, up_down)		\
 static ssize_t show_##file_name##_##num_core##_##up_down		\
@@ -813,6 +828,7 @@ define_one_global_rw(max_cpu_lock);
 define_one_global_rw(min_cpu_lock);
 define_one_global_rw(hotplug_lock);
 define_one_global_rw(dvfs_debug);
+define_one_global_ro(cpucore_table);
 
 static struct attribute *dbs_attributes[] = {
 	&sampling_rate_min.attr,
@@ -846,6 +862,7 @@ static struct attribute *dbs_attributes[] = {
 	&hotplug_rq_3_0.attr,
 	&hotplug_rq_3_1.attr,
 	&hotplug_rq_4_0.attr,
+	&cpucore_table.attr,
 	NULL
 };
 
